@@ -6,6 +6,7 @@ Multi Backup Batch System
 
  MBBS - Multi Backup Batch System
 
+
   purpose: Make multiples backups and send an email with a report.
            Only uses backups through tar,zip and mysqldump
            To configure fill a tsv (tab separate values) with all targets to backup.
