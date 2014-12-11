@@ -1,0 +1,7 @@
+INSTALL
+-------------------------------------------------
+
+- copy the file mbbs.plx to the host where you want to make backups
+- create the file with all backups you need based in template backups_template.tsv
+- edit file mbbs.plx and change the settings to your needs
+- execute the script mbbs.plx
