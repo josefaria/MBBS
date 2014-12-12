@@ -10,7 +10,7 @@
 #                     tar.bz2: the backup file will be <backup_filename>.tar.bz2
 #                     tar.gz: the backup file will be <backup_filename>.tar.gz
 #          target: diretory where to save the backup file
-#          emails: email_to,email_to,...;email_cc,email_cc,...;email_bcc,email_bcc,...
+#          emails: email_to,email_to,...;email_cc,email_cc,...
 #          files: preserved onlye last <files>
 #
 #example:

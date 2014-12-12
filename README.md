@@ -29,7 +29,7 @@ Multi Backup Batch System
            files: preserved onlye last <files>
 
  example:
- tar v /home/jonh/bin	bin	tar.bz2	/home/john/Backups/	jonh\@somedomain.somewhere;admin\@somedomain.somewhere	3
+ tar v /home/jonh/bin	bin	tar.bz2	/home/john/Backups/	jonh@somedomain.somewhere;admin@somedomain.somewhere	3
  - use tool tar with parameters -cjf due extension tar.bz2
  - backup the dir "/home/jonh/bin"
  - add extraparameter v .i.e tar -cjvf
