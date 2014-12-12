@@ -86,6 +86,7 @@ my @record=();
 my @parcels=();
 my @list_of_commands=();
 my $command='';
+my $command_tmp='';
 my $ext='';
 my $ext_tmp='';
 my @result=();
@@ -335,7 +336,9 @@ foreach (@list_of_sources) {
 			$command = $_;
 			#print $command . "\n";
 			@result = `$command 2>&1`;	
-			$message_contents .= "<td>$command</td>";	
+			$command_tmp = $command;
+			$command_tmp=~ s/--password=(.*) /--password=XXXXXXXX /g;
+			$message_contents .= "<td>$command_tmp</td>";	
 			$message_contents .= "<td>";
 			foreach (@result) {
 				$message_contents .= "$_<br>";
@@ -346,12 +349,12 @@ foreach (@list_of_sources) {
 		#delete old files preserve only the last <number_of_files>
 		# -------------------------
 		if ($number_backups>0) {
-			$message_contents .= "<tr><th colspan=\"2\" class=\"minor\">deleted files</th><th colspan=\"2\" class=\"minor\">preserved files</th></tr>\n";
 			@files = glob($target . "/*_$hostname" . "_$prefix.$ext");
 			#sort @files;
 			$last=@files;
-			$message_contents .= "<tr><td colspan=\"2\">";
 			if ($last>$number_backups) {
+				$message_contents .= "<tr><th colspan=\"2\" class=\"minor\">deleted files</th><th colspan=\"2\" class=\"minor\">preserved files</th></tr>\n";
+				$message_contents .= "<tr><td colspan=\"2\">";
 				if (($last-$number_backups)>=0) {
 					for($i=0;$i<($last-$number_backups);$i++) {
 						$command = "rm -f " . $files[$i];
