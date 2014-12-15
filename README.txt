@@ -2,9 +2,9 @@ MBBS
 ====
 
 Multi Backup Batch System
------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------
 
- MBBS - Multi Backup Batch System
+MBBS - Multi Backup Batch System
 
 
   purpose: Make multiples backups and send an email with a report.
@@ -45,4 +45,4 @@ Multi Backup Batch System
   Jose Luis Faria, jose@di.uminho.pt,joseluisfaria@gmail.com
   Universidade do Minho, Braga, Portugal
 
------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------
