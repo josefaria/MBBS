@@ -13,7 +13,7 @@
 ##           <middle name of the backup file>;
 ##           <type of backup: zip, tar, tar.bz2 or tar.gz>;
 ##           <target dir>: where to put the backup file;
-##           <email to send the report>: <email_to>,<email_to>,...;<email_cc>,<email_cc>,...
+##           <email to send the report>: <email_to>,<email_cc>,<email_bcc>;
 ##           <number of last logs to preserve>: ##
 ##           
 ##  using perl+sendmail/postfix+tar
@@ -39,9 +39,16 @@ use File::Basename;
 my $email_from = "jose\@di.uminho.pt";
 my $email_to = "jose\@di.uminho.pt";
 my $email_cc = "";
+my $email_bcc = "";
 my $mydir= dirname($0);
 
 ## list of files/dir to backup and for each source is composed by some elements:
+## - dir or files to backup
+## - middle name of backup file
+## - type of backup file: zip,tar,tar.bz2, tar.gz
+## - target dir
+## - send email: To: email;Cc: email, Bcc: email
+## - number of last logs to preserve
 my $file_of_sources = $mydir . "/list_of_backups.tsv";
 
 # =0 do the work
@@ -86,8 +93,6 @@ my @result=();
 my @files=();
 my $last=0;
 my $flag=0;
-my $last_email_to ='';
-my $last_email_cc ='';
 my $error_message='';
 my $hostfqdn = hostfqdn();
 my $hostname = hostname();
@@ -117,13 +122,8 @@ sub send_email_report{
 	my $from=$_[0];
 	my $to=$_[1];
 	my $cc=$_[2];
-	my $message_contents=$_[3];
-
-	# there is nothing to send
-	if ($message_contents eq '') {
-		return(0);
-	}
-
+	my $bcc=$_[3];
+	my $message_contents=$_[4];
 	#
 	# prepare report to send by email
 	#
@@ -150,6 +150,10 @@ sub send_email_report{
 	@parcels=split/,/, $cc;
 	foreach (@parcels) {
 		print MAIL "Cc: $_\n";
+	}
+	@parcels=split/,/, $bcc;
+	foreach (@parcels) {
+		print MAIL "Bcc: $_\n";
 	}
 	print MAIL "Subject: $subject\n";
 	print MAIL "Content-Type: text/html; charset=ISO-utf8\n\n";
@@ -189,8 +193,10 @@ sub send_email_report{
 	print MAIL "  vertical-align: top;\n";
 	print MAIL "  font-family: courier, verdana;\n";
 	print MAIL "}\n";
-	print MAIL "table.report td.alarm {\n";
+	print MAIL "table.report td.atention {\n";
+	print MAIL "	background-color: #FFA500;\n";
 	print MAIL "	color: #FFFFFF;\n";
+	print MAIL "	font-family: courier;\n";
 	print MAIL "}\n";
 	print MAIL "table.report tr.alarm {\n";
 	print MAIL "  background-color: #F88017;\n";
@@ -235,18 +241,7 @@ sub send_email_report{
 ## load the list of work to do
 ##
 ## ------------------------------------------------------------
-if (-e $file_of_sources) {
-	open(SOURCES,"<" . $file_of_sources);	
- } else {
-	if ($email_to ne '') {
-		$message_contents="I can't open the file [<b>$file_of_sources</b>]";
-		send_email_report($email_from,$email_to,'','',$message_contents);
-		exit(0);
-	} else {
-		die ("\n\nI can not open the file [$file_of_sources]\n\n");
-	}
-}
-
+open(SOURCES,"<" . $file_of_sources) or die("\nI can not open the file [$file_of_sources]\n\n");
 while (<SOURCES>) {
 	if (! /^#/) {
 		push(@list_of_sources,$_);
@@ -285,6 +280,9 @@ foreach (@list_of_sources) {
 		}
 		if (@parcels>1) {
 			$email_cc=$parcels[1];
+		}
+		if (@parcels>2) {
+			$email_bcc=$parcels[2];
 		}
 		$number_backups = $record[7];
 		if ($tool eq 'zip') {
@@ -333,8 +331,8 @@ foreach (@list_of_sources) {
 		} else {
 			push(@list_of_commands, $command . " " . $parameters . " " . $target . "/$year" ."$mon"."$mday"."_" . "$hour" . "h" . "$min" . "m" . "_$hostname" . "_$prefix" . ".$ext" . " " . $source);
 		}
-		$message_contents .= "<table class=\"report\">\n";
-		$message_contents .= "<tr><th>source</th><th>target</th><th>executed</th><th>messages</th></tr>\n";
+		$message_contents .= '<table class="report">';
+		$message_contents .= "<tr><th>source</th><th>target</th><th>command</th><th>messages</th></tr>\n";
 		foreach (@list_of_commands) {
 			$message_contents .= "<tr><td>$source</td><td>$target</td>";
 			$command = $_;
@@ -343,7 +341,11 @@ foreach (@list_of_sources) {
 			$command_tmp = $command;
 			$command_tmp=~ s/--password=(.*) /--password=XXXXXXXX /g;
 			$message_contents .= "<td>$command_tmp</td>";	
-			$message_contents .= "<td>";
+			if (scalar(@result)>0) {
+				$message_contents .= "<td class=\"atention\">";
+			} else {
+				$message_contents .= "<td>";
+			}
 			foreach (@result) {
 				$message_contents .= "$_<br>";
 			}
@@ -394,23 +396,12 @@ foreach (@list_of_sources) {
 		$message_contents .= "<br>\n";
 	} else {
 		$flag=1;
-		$error_message = "I need at least 8 parameters in this line";
-		$email_to='';
-		if ($email_to ne '') {
-			$message_contents .= "<table class=\"report\">\n";
-			$message_contents .= "<tr><th>line of backup</th><th>error message</th></tr>\n";
-			$message_contents .= "<tr>$line<td>$error_message</td></tr>\n";
-			$message_contents .= "</table>\n";
-		} else {
-			print "\nline->$line\n$error_message\n";
-		}
+		$error_message = "I need at least 8 parameters in this line: [" . $line . "]";
 	}
-	if (($email_to ne $last_email_to)||($last_email_cc ne $last_email_cc)) {
-		send_email_report($email_from,$email_to,$email_cc,$message_contents);
-		$message_contents='';
-		$last_email_to=$email_to;
-		$last_email_cc=$email_cc;
+	if ($flag==1) {
+		print "\n" . $error_message . "\n\n";
 	}
+
 }
 
 
@@ -421,11 +412,8 @@ foreach (@list_of_sources) {
 ##
 ## ------------------------------------------------------------
 
-if (($email_to ne '')||($email_cc ne '')) {
-		send_email_report($email_from,$email_to,$email_cc,$message_contents);
-} elsif ($message_contents ne '') {
-	print "\n\n$message_contents\n\n";
-}
+send_email_report($email_from,$email_to,$email_cc,$email_bcc,$message_contents);
+
 
 
 ## ------------------------------------------------------------

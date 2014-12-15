@@ -26,13 +26,13 @@ Multi Backup Batch System
                       tar.gz: the backup file will be <backup_filename>.tar.gz
            target: diretory where to save the backup file
            emails: email_to,email_to,...;email_cc,email_cc,...;email_bcc,email_bcc,...
-           files: preserved onlye last <files>
+           files: preserved only last <files>
 
  example:
  tar v /home/jonh/bin	bin	tar.bz2	/home/john/Backups/	jonh@somedomain.somewhere;admin@somedomain.somewhere	3
  - use tool tar with parameters -cjf due extension tar.bz2
- - backup the dir "/home/jonh/bin"
  - add extraparameter v .i.e tar -cjvf
+ - backup the dir "/home/jonh/bin"
  - the filename will be <date_backup>_<hour_backup>_bin.tar.bz2 because the name is "bin"
  - the backup will be placed in "/home/john/Backups/"
  - the report will be send To: jonh\@somedomain.somewhere and Cc: admin\@somedomain.somewhere
